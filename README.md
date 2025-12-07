@@ -218,7 +218,74 @@ root.mainloop()
 
 
 
+# bot
 
+from http.client import responses
+from mimetypes import guess_type
+
+import telebot
+import  random
+from openai import OpenAI
+
+from rew1.AIAs import user_input
+
+# === Встав свої ключі===
+TG_TOKEN = "YOUR_TELEGRAM_TOKEN"
+OPENAI_API_KEY= "YOUR_OPENAI_KEY"
+
+bot = telebot.TeleBot(TG_TOKEN)
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+game_state = {}
+
+#=========================================
+#Команда / start
+@bot.message_handler(commands=["start"])
+def start(message):
+    bot.send_message(message.chat.id, "Привіт! Я бот з чат GPT \n"
+                                      "Команди:\n"
+                     "/game - " 
+                     "/game - 'Вгадай число'\n" 
+    "просто напиши повідомлення - я відповім як ChatGPT")
+    #==================================
+    # Game
+    @bot.message_handler(commands=['game'])
+    def game(message):
+        user_id = message.from_user.id
+        number = random.randint(1, 100)
+        game_state[user_id] = number
+
+        bot.send_message(message.chat.id, "Гра розпочата!\n"
+                                          "Я загадав число від 1 до 100\n Спробуй вгадати!")
+#==============
+def handle_game(message):
+    user_id = message.from_user.id
+    guess = message.text.strip()
+
+    if not guess.isdigit():
+        bot.send_message(message.chat.id, "Введи ціле число")
+        return
+    guess = int(guess)
+    secret = game_state[user_id]
+
+    if guess < secret:
+        bot.send_message(message.chat.it, "Моє число більше")
+    elif guess > secret:
+        bot.send_message(message.chat.id, "Моє число менше")
+    else:
+        bot.send_message(message.chat.id, "Вірно! Ти вгадав!")
+        del game_state[user_id]
+
+#=======
+def chatgpt_answer(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4j-mini",
+        messages=[{"role": "system", "content: Ти дружній Telegram-бот"}
+                  {"role": "user", "content": prompt},]
+    )
+
+
+# недороблено
 
 
 
